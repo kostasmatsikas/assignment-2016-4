@@ -2,7 +2,6 @@ __author__ = 'matsikaskonstantinos'
 
 import argparse
 import csv
-import sys
 
 class Node:
     def __init__(self, number):
@@ -147,28 +146,28 @@ def getTrinaryDigit(prevBase, currentDna):
     if prevBase == 'A':
         if currentDna == 'C':
             return 0
-        if currentDna == 'G':
+        elif currentDna == 'G':
             return 1
         else:
             return 2
     if prevBase == 'C':
         if currentDna == 'A':
             return 2
-        if currentDna == 'G':
+        elif currentDna == 'G':
             return 0
         else:
             return 1
     if prevBase == 'G':
         if currentDna == 'A':
             return 1
-        if currentDna == 'C':
+        elif currentDna == 'C':
             return 2
         else:
             return 0
     if prevBase == 'T':
         if currentDna == 'A':
             return 0
-        if currentDna == 'C':
+        elif currentDna == 'C':
             return 1
         else:
             return 2
@@ -191,12 +190,6 @@ def encode(inputparam, outputparam, huffmanparam):
     for i in range(0, len(uniqueLetters)):
         printLetter = uniqueLetters[i].letter
         prineLetterTrinarypath = getPath(uniqueLetters[i].node)
-        #print(printLetter)
-        #print(prineLetterTrinarypath)
-
-    print(text)
-    #for i in range(0,(len(uniqueLetters))):
-     #   print(uniqueLetters[i].letter)
 
     finalTrinaryPath = []
     for i in range(0,len(text)):
@@ -211,16 +204,12 @@ def encode(inputparam, outputparam, huffmanparam):
         finalDnaCode += getDnaCode(prevBase,finalTrinaryPath[i])
         prevBase = finalDnaCode[i]
 
-    print(finalDnaCode)
-
     file = open(outputparam, 'a')
     file.write(''.join(finalDnaCode))
     file.close()
 
     csvLetters = []
     for i in range(0,len(uniqueLetters)):
-        print(uniqueLetters[i].letter)
-        print('---------')
         csvLetters.append(uniqueLetters[i].letter + ',' + ''.join(str(x) for x in getPath(uniqueLetters[i].node)))
 
     csv_file = open(huffmanparam, 'a')
@@ -228,11 +217,11 @@ def encode(inputparam, outputparam, huffmanparam):
     csv_file.close()
 
 def decode(inputparam, outputparam, huffmanparam):
+    userInput = loadLetters(inputparam)
     prevBase = 'A'
     primaryTrinaryCode = []
-    userInput = loadLetters(inputparam)
     for i in range(0,len(userInput)):
-        primaryTrinaryCode += getTrinaryDigit(prevBase,userInput)
+        primaryTrinaryCode += getTrinaryDigit(prevBase,userInput[i])
         prevBase = userInput[i]
 
     print(primaryTrinaryCode)
@@ -251,9 +240,6 @@ def decode(inputparam, outputparam, huffmanparam):
     file.close()
 
 
-
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument("input", help="inputparameter",
                     type=str)
@@ -265,13 +251,11 @@ parser.add_argument("-d","--decode", help="decoding",action="store_true", defaul
 args = parser.parse_args()
 
 
-print (args.decode)
-
 results = parser.parse_args()
-print ('-------------')
-print (results.decode_dna)
-print ('-------------')
-if(results.decode_dna == True):
-    decode(results.input, results.output, results.huffman)
-elif (len(sys.argv) > 2):
-    encode(results.input, results.output, results.huffman)
+
+
+encode(results.input, results.output, results.huffman)
+#decode(results.input, results.output, results.huffman)
+#to decoding den leitourgei swsta, alla exei ginei prospatheia
+
+#episis den exei prostethei elegxos gia na trexei to encoding i to decoding analoga me to input tou xristi
