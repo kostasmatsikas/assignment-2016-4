@@ -2,6 +2,7 @@ __author__ = 'matsikaskonstantinos'
 
 import argparse
 import csv
+import sys
 
 class Node:
     def __init__(self, number):
@@ -112,10 +113,7 @@ def getPath(node):
 
     return result
 
-def getTritValue():
-    return '01201201201201210'
-
-def getDnaCode(prevBase,currentTrit):
+def getDnaCode(prevBase, currentTrit):
     if prevBase == 'A':
         if currentTrit == 0:
             return 'C'
@@ -145,45 +143,135 @@ def getDnaCode(prevBase,currentTrit):
         else:
             return 'G'
 
+def getTrinaryDigit(prevBase, currentDna):
+    if prevBase == 'A':
+        if currentDna == 'C':
+            return 0
+        if currentDna == 'G':
+            return 1
+        else:
+            return 2
+    if prevBase == 'C':
+        if currentDna == 'A':
+            return 2
+        if currentDna == 'G':
+            return 0
+        else:
+            return 1
+    if prevBase == 'G':
+        if currentDna == 'A':
+            return 1
+        if currentDna == 'C':
+            return 2
+        else:
+            return 0
+    if prevBase == 'T':
+        if currentDna == 'A':
+            return 0
+        if currentDna == 'C':
+            return 1
+        else:
+            return 2
 
-filename = 'mytext.txt'
+def encode(inputparam, outputparam, huffmanparam):
+    text = loadLetters(inputparam)
+    uniqueLetters = getUniqueLetters(text)
 
-text = loadLetters(filename)
-uniqueLetters = getUniqueLetters(text)
+    if (len(uniqueLetters) % 2 == 0):
+           uniqueLetters.append(Letter("",0))
 
-if (len(uniqueLetters) % 2 == 0):
-       uniqueLetters.append(Letter("",0))
+    uniqueLetters = letterBubblesort(uniqueLetters)
 
-uniqueLetters = letterBubblesort(uniqueLetters)
+    nodes = []
+    for ltr in uniqueLetters:
+        nodes.append(ltr.convertToNode())
 
-nodes = []
-for ltr in uniqueLetters:
-    nodes.append(ltr.convertToNode())
+    rootNode = huffman(nodes)
 
-rootNode = huffman(nodes)
+    for i in range(0, len(uniqueLetters)):
+        printLetter = uniqueLetters[i].letter
+        prineLetterTrinarypath = getPath(uniqueLetters[i].node)
+        #print(printLetter)
+        #print(prineLetterTrinarypath)
 
-for i in range(0, len(uniqueLetters)):
-    printLetter = uniqueLetters[i].letter
-    prineLetterTrinarypath = getPath(uniqueLetters[i].node)
-    #print(printLetter)
-    #print(prineLetterTrinarypath)
+    print(text)
+    #for i in range(0,(len(uniqueLetters))):
+     #   print(uniqueLetters[i].letter)
 
-#print(text)
-#for i in range(0,(len(uniqueLetters))):
- #   print(uniqueLetters[i].letter)
+    finalTrinaryPath = []
+    for i in range(0,len(text)):
+        for j in range(0,len(uniqueLetters)):
+            if (text[i] == uniqueLetters[j].letter):
+                finalTrinaryPath += getPath(uniqueLetters[j].node)
 
-finalTrinaryPath = []
-for i in range(0,len(text)):
-    for j in range(0,len(uniqueLetters)):
-        if (text[i] == uniqueLetters[j].letter):
-            finalTrinaryPath += getPath(uniqueLetters[j].node)
+    prevBase = 'A'
 
-print(finalTrinaryPath)
-prevBase = 'A'
+    finalDnaCode = []
+    for i in range (0,len(finalTrinaryPath)):
+        finalDnaCode += getDnaCode(prevBase,finalTrinaryPath[i])
+        prevBase = finalDnaCode[i]
 
-finalDnaCode=[]
-for i in range (0,len(finalTrinaryPath)):
-    finalDnaCode += getDnaCode(prevBase,finalTrinaryPath[i])
-    prevBase = finalDnaCode[i]
+    print(finalDnaCode)
 
-print(finalDnaCode)
+    file = open(outputparam, 'a')
+    file.write(''.join(finalDnaCode))
+    file.close()
+
+    csvLetters = []
+    for i in range(0,len(uniqueLetters)):
+        print(uniqueLetters[i].letter)
+        print('---------')
+        csvLetters.append(uniqueLetters[i].letter + ',' + ''.join(str(x) for x in getPath(uniqueLetters[i].node)))
+
+    csv_file = open(huffmanparam, 'a')
+    csv_file.write('\n'.join(csvLetters))
+    csv_file.close()
+
+def decode(inputparam, outputparam, huffmanparam):
+    prevBase = 'A'
+    primaryTrinaryCode = []
+    userInput = loadLetters(inputparam)
+    for i in range(0,len(userInput)):
+        primaryTrinaryCode += getTrinaryDigit(prevBase,userInput)
+        prevBase = userInput[i]
+
+    print(primaryTrinaryCode)
+
+    decode_dna=[]
+    j = primaryTrinaryCode[0]
+    for i in range (0,len(primaryTrinaryCode)):
+            if (j in huffmanparam):
+                decode_dna += huffmanparam
+                j = primaryTrinaryCode[i]
+            else:
+                j += primaryTrinaryCode[i]
+
+    file = open(outputparam, 'a')
+    file.write(''.join(decode_dna))
+    file.close()
+
+
+
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("input", help="inputparameter",
+                    type=str)
+parser.add_argument("output", help="outputparameter",
+                    type=str)
+parser.add_argument("huffman", help="huffmanparameter",
+                    type=str)
+parser.add_argument("-d","--decode", help="decoding",action="store_true", default=False)
+args = parser.parse_args()
+
+
+print (args.decode)
+
+results = parser.parse_args()
+print ('-------------')
+print (results.decode_dna)
+print ('-------------')
+if(results.decode_dna == True):
+    decode(results.input, results.output, results.huffman)
+elif (len(sys.argv) > 2):
+    encode(results.input, results.output, results.huffman)
